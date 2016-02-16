@@ -88,7 +88,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return reduce(function (prev, name) {
 	        return Object.assign(prev, _defineProperty({}, name, promisify(fs[name], fs)));
 	    }, {}, fn_name_list);
-	}(_fs2.default, ['readFile', 'writeFile', 'mkdir', 'stat', 'readdir']);
+	}(_fs2.default, Object.keys(_fs2.default));
 
 	var mkdirp = function mkdirp(dir) {
 	    var dir_parts = _path2.default.resolve(dir).split(_path2.default.sep),
@@ -166,8 +166,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return helper(dir, pattern, max_depth);
 	};
 
+	var copy_file = function copy_file(from, to) {
+	    return new Promise(function (resolve, reject) {
+	        var r, w;
+
+	        try {
+	            r = _fs2.default.createReadStream(from);
+	            w = _fs2.default.createWriteStream(to);
+	        } catch (e) {
+	            reject(e);
+	        }
+
+	        r.on('error', reject);
+	        w.on('error', reject);
+	        r.on('close', resolve);
+
+	        r.pipe(w);
+	    });
+	};
+
 	Object.assign(xfs, {
-	    mkdirp: mkdirp, ensure_dir: ensure_dir, find_file: find_file
+	    mkdirp: mkdirp, ensure_dir: ensure_dir, find_file: find_file, copy_file: copy_file
 	});
 
 	module.exports = xfs;

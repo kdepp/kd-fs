@@ -15,7 +15,7 @@ let xfs = (function (fs, fn_name_list) {
     return  reduce((prev, name) => {
         return Object.assign(prev, { [name]: promisify(fs[name], fs) })
     }, {}, fn_name_list);
-})(fs, ['readFile', 'writeFile', 'mkdir', 'stat', 'readdir']);
+})(fs, Object.keys(fs));
 
 let mkdirp = (dir) => {
     let dir_parts = path.resolve(dir).split(path.sep),
@@ -96,9 +96,27 @@ let find_file = (pattern, dir, options = {}) => {
     return helper(dir, pattern, max_depth);
 };
 
+let copy_file = (from, to) => {
+    return new Promise((resolve, reject) => {
+        var r, w;
+
+        try {
+            r = fs.createReadStream(from);
+            w = fs.createWriteStream(to);
+        } catch (e) {
+            reject(e);
+        }
+
+        r.on('error', reject);
+        w.on('error', reject);
+        r.on('close', resolve);
+
+        r.pipe(w);
+    });
+};
 
 Object.assign(xfs, {
-    mkdirp, ensure_dir, find_file
+    mkdirp, ensure_dir, find_file, copy_file
 });
 
 module.exports = xfs;
