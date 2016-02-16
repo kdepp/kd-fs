@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import * as x  from 'kd-utils';
+import * as x from 'kd-utils';
 
 const {
     map, filter, without, reduce, promisify, deep_flatten
@@ -101,5 +101,5 @@ Object.assign(xfs, {
     mkdirp, ensure_dir, find_file
 });
 
-export default xfs;
+module.exports = xfs;
 
