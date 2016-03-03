@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import * as x from 'kd-utils';
+import rmdir from 'rimraf';
 
 const {
     map, filter, without, reduce, promisify, deep_flatten
@@ -117,6 +118,8 @@ let copy_file = (from, to) => {
 
 Object.assign(xfs, {
     mkdirp, ensure_dir, find_file, copy_file
+}, {
+    rmdir: promisify(rmdir)    
 });
 
 module.exports = xfs;

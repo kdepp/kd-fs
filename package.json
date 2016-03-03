@@ -8,7 +8,8 @@
     "build": "webpack --verbose --colors --display-error-details --config webpack.config.js"
   },
   "dependencies": {
-    "kd-utils": "git+ssh://git@git.2b6.me:taining.lu/kdutils.git"
+    "kd-utils": "git+ssh://git@git.2b6.me:taining.lu/kdutils.git",
+    "rimraf": "^2.5.2"
   },
   "devDependencies": {
     "babel-core": "^6.5.2",
