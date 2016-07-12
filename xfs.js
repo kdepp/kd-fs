@@ -41,7 +41,7 @@ let mkdirp = (dir) => {
     );
 };
 
-let ensure_dir = (dir) => {
+let ensureDir = (dir) => {
     return new Promise((resolve, reject) => {
         xfs.stat(dir)
         .then(
@@ -55,12 +55,12 @@ let ensure_dir = (dir) => {
     });
 };
 
-let is_dir = (dir) => {
+let isDir = (dir) => {
     return xfs.stat(dir)
     .then(stats => stats.isDirectory());
 };
 
-let find_file = (pattern, dir, options = {}) => {
+let findFile = (pattern, dir, options = {}) => {
     let {max_depth} = options;
 
     max_depth = max_depth || -1;
@@ -97,7 +97,7 @@ let find_file = (pattern, dir, options = {}) => {
     return helper(dir, pattern, max_depth);
 };
 
-let copy_file = (from, to) => {
+let copyFile = (from, to) => {
     return new Promise((resolve, reject) => {
         var r, w;
 
@@ -117,7 +117,7 @@ let copy_file = (from, to) => {
 };
 
 Object.assign(xfs, {
-    mkdirp, ensure_dir, find_file, copy_file
+    mkdirp, ensureDir, findFile, copyFile, isDir
 }, {
     rmdir: promisify(rmdir)    
 });
