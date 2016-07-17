@@ -116,7 +116,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	};
 
-	var ensure_dir = function ensure_dir(dir) {
+	var ensureDir = function ensureDir(dir) {
 	    return new Promise(function (resolve, reject) {
 	        xfs.stat(dir).then(function (stats) {
 	            resolve(stats.isDirectory() ? true : mkdirp(dir));
@@ -126,13 +126,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    });
 	};
 
-	var is_dir = function is_dir(dir) {
+	var isDir = function isDir(dir) {
 	    return xfs.stat(dir).then(function (stats) {
 	        return stats.isDirectory();
 	    });
 	};
 
-	var find_file = function find_file(pattern, dir) {
+	var findFile = function findFile(pattern, dir) {
 	    var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 	    var max_depth = options.max_depth;
 
@@ -170,7 +170,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return helper(dir, pattern, max_depth);
 	};
 
-	var copy_file = function copy_file(from, to) {
+	var copyFile = function copyFile(from, to) {
 	    return new Promise(function (resolve, reject) {
 	        var r, w;
 
@@ -190,7 +190,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	Object.assign(xfs, {
-	    mkdirp: mkdirp, ensure_dir: ensure_dir, find_file: find_file, copy_file: copy_file
+	    mkdirp: mkdirp, ensureDir: ensureDir, findFile: findFile, copyFile: copyFile, isDir: isDir
 	}, {
 	    rmdir: promisify(_rimraf2.default)
 	});
@@ -353,7 +353,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		    var ret = initial;
 
 		    for (var i = 0, len = list.length; i < len; i += 1) {
-		        ret = fn(ret, list[i]);
+		        ret = fn(ret, list[i], i, list);
 		    }
 
 		    return ret;
@@ -363,21 +363,21 @@ return /******/ (function(modules) { // webpackBootstrap
 		    var ret = initial;
 
 		    for (var i = list.length - 1; i >= 0; i -= 1) {
-		        ret = fn(list[i], ret);
+		        ret = fn(list[i], ret, i, list);
 		    }
 
 		    return ret;
 		});
 
 		var map = exports.map = partial(function (fn, list) {
-		    return reduce(function (prev, cur) {
-		        return prev.push(fn(cur)), prev;
+		    return reduce(function (prev, cur, i, list) {
+		        return prev.push(fn(cur, i, list)), prev;
 		    }, [], list);
 		});
 
 		var filter = exports.filter = partial(function (predicate, list) {
-		    return reduce(function (prev, cur) {
-		        if (fn(cur)) prev.push(cur);
+		    return reduce(function (prev, cur, i, list) {
+		        if (predicate(cur, i, list)) prev.push(cur);
 		        return prev;
 		    }, [], list);
 		});
@@ -433,6 +433,12 @@ return /******/ (function(modules) { // webpackBootstrap
 		    return ret;
 		});
 
+		var flatten = exports.flatten = function flatten(list) {
+		    return reduce(function (prev, cur) {
+		        return prev.concat(cur);
+		    }, [], list);
+		};
+
 		var deep_flatten = exports.deep_flatten = function deep_flatten(list) {
 		    var helper = function helper(list) {
 		        return reduce(function (prev, cur) {
@@ -471,6 +477,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		    }, {}, Object.keys(obj));
 		});
 
+		var pick = exports.pick = partial(function (key_list, obj) {
+		    return reduce(function (prev, cur) {
+		        prev[cur] = obj[cur];
+		        return prev;
+		    }, {}, key_list);
+		});
+
 		/*
 		 * Function Operations
 		 */
@@ -487,10 +500,22 @@ return /******/ (function(modules) { // webpackBootstrap
 		    }, id, fns);
 		};
 
+		var compose_promise = exports.compose_promise = function compose_promise() {
+		    for (var _len4 = arguments.length, fns = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+		        fns[_key4] = arguments[_key4];
+		    }
+
+		    return reduce_right(function (cur, prev) {
+		        return function (x) {
+		            return Promise.resolve(prev(x)).then(cur);
+		        };
+		    }, id, fns);
+		};
+
 		var promisify = exports.promisify = function promisify(fn, context) {
 		    return function () {
-		        for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-		            args[_key4] = arguments[_key4];
+		        for (var _len5 = arguments.length, args = Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
+		            args[_key5] = arguments[_key5];
 		        }
 
 		        return new Promise(function (resolve, reject) {
@@ -530,6 +555,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		var n_digits = exports.n_digits = partial(function (n, num) {
 		    var str = num + '';
 		    return str.length >= n ? str : repeat(1, '0') + str;
+		});
+
+		var sprintf = exports.sprintf = partial(function (str, data) {
+		    return reduce(function (prev, cur) {
+		        var reg = new RegExp("\\$\\{" + cur + "\\}", "g");
+		        return prev.replace(reg, data[cur]);
+		    }, str, Object.keys(data));
 		});
 
 	/***/ },
